@@ -9,4 +9,4 @@
 *.lst~
 *.mcu8051ide~
 *.vhc~
-*.vhw
+*.vhw~
