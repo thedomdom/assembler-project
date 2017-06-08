@@ -1,0 +1,12 @@
+*.adf
+*.adf~
+*.asm~
+*.bin
+*.bin~
+*.hex
+*.hex~
+*.lst
+*.lst~
+*.mcu8051ide~
+*.vhc~
+*.vhw
