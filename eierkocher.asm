@@ -36,36 +36,42 @@ init:
 	tempsensor_low equ P1.4
 	tempsensor_high equ P1.5
 	; internal
-	temp_max equ R1
-	timer equ R2
-	timer_max equ R3
-	is_active equ R4
-
+	temp_max equ 22H
+	timer equ R1
+	timer_max equ R2
+	is_active equ R0
+	
 	MOV IN0, #00H
 	MOV OUT0, #00H
-	
+	MOV is_active, #00H
 	MOV timer, #00H
 	
 	MOV temp_max, #100
 	MOV timer_max, #100 ; TODO set right time here
-	call resetsensor
-	call sensortick
+	CALL resetsensor
+	CALL sensortick
 	CALL writemaxtemp
+	LJMP read
+
+read:
+	MOV c, P0.1
+	CPL c
+	MOV button, c
+	MOV c, tempsensor_high
+	MOV temp_high, c
 	
-LJMP start
+	CJNE is_active, #00H, checktemp
+	JB button, setactive
+	JMP read
 
-start:
-MOV IN0, P0
-MOV c, tempsensor_high
-MOV temp_high, c
-MOV P3, IN0
-LJMP process
+setactive:
+	MOV is_active, #0FFh
+	JMP checktemp
 
-process:
+checktemp:
 LJMP end
-
 end:
-LJMP start
+LJMP read
 
 
 ;----------------------------------------------------
