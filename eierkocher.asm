@@ -25,9 +25,9 @@ init:
 	button equ IN0.1
 	; output
 	OUT0 equ 21H
-	horn equ OUT0.0
-	heating equ OUT0.1
-	active equ OUT0.2
+	horn_led equ OUT0.0
+	heating_led equ OUT0.1
+	active_led equ OUT0.2
 	; IO tempsensor
 	tempsensor_dq equ P1.0
 	tempsensor_clk equ P1.1
@@ -39,11 +39,11 @@ init:
 	temp_max equ 22H
 	timer equ R1
 	timer_max equ R2
-	is_active equ R0
+	active equ R0
 	
 	MOV IN0, #00H
 	MOV OUT0, #00H
-	MOV is_active, #00H
+	MOV active, #00H
 	MOV timer, #00H
 	
 	MOV temp_max, #100
@@ -54,23 +54,34 @@ init:
 	LJMP read
 
 read:
+	; read button
 	MOV c, P0.1
 	CPL c
 	MOV button, c
+	; read temp_high
 	MOV c, tempsensor_high
 	MOV temp_high, c
-	
-	CJNE is_active, #00H, checktemp
+
+	; If active --> checktemp
+	;CJNE active, #00H, checktemp
+	; Else if button pressed --> setactive
 	JB button, setactive
+	; Else --> read
 	JMP read
 
 setactive:
-	MOV is_active, #0FFh
+	;active = 1111 1111
+	MOV active, #0FFh
+	; --> checktemp
 	JMP checktemp
 
 checktemp:
-LJMP end
-end:
+
+heat:
+
+checktimer:
+
+output:
 LJMP read
 
 
