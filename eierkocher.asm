@@ -3,19 +3,25 @@
 ; Tom Bendrath, Dominik Wunderlich, Enrico Kaack und Torben Krieger
 
 CSEG AT 0H
-LJMP start
-ORG 100H
+LJMP init
+cseg at 100h
+
+ORG 0bh
+call timerinterrupt
+RETI
 
 ; --------------------------
 ; start
 ; --------------------------
-start:
-; P0.0 - Taster
-; P0.1 - Hupe
-; P2 - Temperatur (Wunschtemp)
-; R0 - Temperatursensor
-; R1 - Wassermenge
-; P1 - Display
+ORG 20h
+init:
+; Definitions
+        ; P0 - Inputs
+		; P0.1 - Button
+	; P1 - Temperature Sensor
+	; P2 - LEDS
+	; P3 - 4x7 Segments Display
+	
 
 	; input
 	IN0 equ 20H
@@ -40,9 +46,10 @@ start:
 	temp_max equ 22H
 	active equ R0
 	timer equ R1
-	timer_max equ R2
+	timer_seconds equ R6
+	timer_minutes equ R7
 
-; Initialize
+; Assignment
 	MOV IN0, #00H
 	MOV OUT0, #00H
 	; Initialize LEDs
@@ -55,12 +62,20 @@ start:
 	MOV timer, #00H
 
 	MOV temp_max, #100
-	MOV timer_max, #100 ; TODO set right time here
+	; reset timer
+	mov timer_minutes, #03h ; minutes
+	mov timer_seconds, #00h ; seconds
 
 	; Initialize temperature sensor
 	CALL resetsensor
 	CALL sensortick
 	CALL writemaxtemp
+
+; Timer initialization
+	mov IE, #10010010b ; timer freischalten
+	mov TMOD, #00000010b ; mode des timers 2 = auto reload
+
+	; --> read
 	LJMP read
 
 read:
@@ -77,7 +92,7 @@ read:
 	; Else if button pressed --> setactive
 	JB button_in, setactive
 	; Else --> read
-	JMP read
+	JMP init
 
 setactive:
 	;active = 1111 1111
@@ -105,14 +120,48 @@ checktimer:
 	; if timer started --> output
 	CJNE timer, #00H, output
 	; else --> starttimer
+	JMP starttimer
+
+starttimer:
+	; Set timer to started
 	MOV timer, #0FFh
+	; start timer
+	mov tl0, #0c0h ; working #0C0h
+	mov th0, #0c0h ; working #0C0h
+	setb tr0 ; startet timer
+	JMP output
+	
 
 output:
 
 ;	Move output register
 	MOV P2, OUT0
-
+	
 	LJMP read
+
+
+;----------------------------------------------------
+; Timer interrupt
+;----------------------------------------------------
+
+timerinterrupt:
+	; decrement timer
+	; if seconds > 0 --> decr_seconds
+	cjne timer_seconds, #0h, decr_seconds
+	; else --> decr_minutes
+	JMP decr_minutes
+
+decr_seconds:
+	dec r6
+	JMP set_segments
+
+decr_minutes:
+	mov r6, #3Ch
+	dec r7
+	JMP set_segments
+
+set_segments:
+	ret
 
 
 ;----------------------------------------------------
@@ -233,3 +282,10 @@ sensortick:
 	setb tempsensor_clk
 	clr tempsensor_clk
 	ret
+
+org 300h
+table:
+db 11000000b
+db 11111001b, 10100100b, 10110000b
+db 10011001b, 10010010b, 10000010b
+db 11111000b, 10000000b, 10010000b
