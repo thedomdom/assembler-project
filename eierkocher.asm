@@ -2,6 +2,7 @@
 ; (Projekt Systemnahe Programmierung)
 ; Tom Bendrath, Dominik Wunderlich, Enrico Kaack und Torben Krieger
 
+org 00h
 CSEG AT 0H
 LJMP init
 cseg at 100h
@@ -43,39 +44,47 @@ init:
 	tempsensor_high equ P1.5
 
 	; internal
-	temp_max equ 22H
-	active equ R0
-	timer equ R1
-	timer_seconds equ R6
-	timer_minutes equ R7
+		; maximum temp
+		temp_max equ 22H
 
-; Assignment
+		;booleans
+		active equ R0
+		timer equ R1
+
+		; time
+		timer_seconds equ R6
+		timer_minutes equ R7
+
+		;digits
+		digit_0 equ 30H
+		digit_1 equ 31H
+		digit_2 equ 32H
+		digit_3 equ 33H
+
+; Timer initialization
+	mov IE, #10010010b ; timer freischalten
+	mov TMOD, #00000010b ; mode des timers 2 = auto reload
+	
+; Assignments
 	MOV IN0, #00H
-	MOV OUT0, #00H
+	MOV OUT0, #0FFH
 	; Initialize LEDs
-	SETB active_led_out
-	SETB horn_out
-	SETB heating_out
+;	SETB active_led_out
+;	SETB horn_out
+;	SETB heating_out
 
 	; Initialize internals
 	MOV active, #00H
 	MOV timer, #00H
 
 	MOV temp_max, #100
-	; reset timer
-	mov timer_minutes, #03h ; minutes
-	mov timer_seconds, #00h ; seconds
 
-	; Initialize temperature sensor
+; Temperature sensor initialization
 	CALL resetsensor
 	CALL sensortick
 	CALL writemaxtemp
 
-; Timer initialization
-	mov IE, #10010010b ; timer freischalten
-	mov TMOD, #00000010b ; mode des timers 2 = auto reload
-
-	; --> read
+; --> read
 	LJMP read
 
 read:
@@ -86,15 +95,21 @@ read:
 	; read temp_high
 	MOV c, tempsensor_high
 	MOV temp_high_in, c
+	; --> checkactive
+	JMP checkactive
 
+
+checkactive:
 	; If active --> checktemp
 	CJNE active, #00H, checktemp
 	; Else if button pressed --> setactive
 	JB button_in, setactive
 	; Else --> read
-	JMP init
+	JMP output
 
 setactive:
+	; deactivate horn
+	SETB horn_out
 	;active = 1111 1111
 	MOV active, #0FFh
 	; activate active LED
@@ -123,22 +138,25 @@ checktimer:
 	JMP starttimer
 
 starttimer:
-	; Set timer to started
-	MOV timer, #0FFh
+	; reset time
+	mov timer_minutes, #0 ; minutes
+	mov timer_seconds, #10 ; seconds
 	; start timer
 	mov tl0, #0c0h ; working #0C0h
 	mov th0, #0c0h ; working #0C0h
-	setb tr0 ; startet timer
+	setb tr0
+	; Set timer to started
+	MOV timer, #0FFh
+	; --> output
 	JMP output
 	
 
 output:
 
-;	Move output register
+	; Move output register
 	MOV P2, OUT0
-	
+	; --> read
 	LJMP read
-
 
 ;----------------------------------------------------
 ; Timer interrupt
@@ -148,21 +166,95 @@ timerinterrupt:
 	; decrement timer
 	; if seconds > 0 --> decr_seconds
 	cjne timer_seconds, #0h, decr_seconds
-	; else --> decr_minutes
-	JMP decr_minutes
+	; else if minutes > 0 --> decr_minutes
+	cjne timer_minutes, #0h, decr_minutes
+	; else --> stoptimer
+	JMP stoptimer
 
 decr_seconds:
-	dec r6
+	dec timer_seconds
 	JMP set_segments
 
 decr_minutes:
-	mov r6, #3Ch
-	dec r7
+	; set seconds to 60
+	mov timer_seconds, #59
+	; decrement minutes
+	dec timer_minutes
+	JMP set_segments
+
+stoptimer:
+	; Deactivate Heating
+	SETB heating_out
+	; horn
+	CLR horn_out
+	;active = 0000 0000
+	MOV active, #00h
+	; deactivate active LED
+	SETB active_led_out
+	; stop timer
+	clr tr0
+	; Set timer to stopped
+	MOV timer, #00h
+	; --> set_segments
 	JMP set_segments
 
 set_segments:
+	; seconds
+;	mov DPTR, #table
+;	mov a, R6
+;	mov b, #0ah
+;	div ab
+;	mov R2, a
+;	movc a,@a+dptr
+;	mov digit_1, a
+;	mov a, r2
+;	xch a,b
+;	movc a, @a+dptr
+;	mov digit_0, a
+;	; minutes
+;	mov a, R7
+;	mov b, #0ah
+;	div ab
+;	mov R2, a
+;	movc a,@a+dptr
+;	mov digit_3, a
+;	mov a, r2
+;	xch a,b
+;	movc a, @a+dptr
+;	mov digit_2, a
+
+	; Display digits
+	CALL display
+	; --> JUMP back to Iterrupt
 	ret
 
+display:
+    mov P3, digit_0
+    clr P2.4
+    setb P2.4
+
+    mov P3, digit_1
+    clr P2.5
+    setb P2.5
+
+    mov P3, digit_2
+    clr P2.6
+    setb P2.6
+
+    mov P3, digit_3
+    clr P2.7
+    setb P2.7
+
+    ret
+
+; Table for Digits
+;org 300h
+;table:
+;DB 11000000b
+;DB 11111001b, 10100100b, 10110000b
+;DB 10011001b, 10010010b, 10000010b
+;DB 11111000b, 10000000b, 10010000b
+;end
 
 ;----------------------------------------------------
 ; util for temp. sensor handling
@@ -283,9 +375,4 @@ sensortick:
 	clr tempsensor_clk
 	ret
 
-org 300h
-table:
-db 11000000b
-db 11111001b, 10100100b, 10110000b
-db 10011001b, 10010010b, 10000010b
-db 11111000b, 10000000b, 10010000b
+end
