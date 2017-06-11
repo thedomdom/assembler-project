@@ -2,39 +2,39 @@
 ; (Projekt Systemnahe Programmierung)
 ; Tom Bendrath, Dominik Wunderlich, Enrico Kaack und Torben Krieger
 
+; Program has to start at 00h
 org 00h
-CSEG AT 0H
-LJMP init
-cseg at 100h
+JMP init
 
+; Timer0 Interrupt vector at 0bh
 ORG 0bh
 call timerinterrupt
 RETI
 
-; --------------------------
-; start
-; --------------------------
-ORG 20h
+; Initialization
+ORG 10h
 init:
 ; Definitions
+
         ; P0 - Inputs
 		; P0.1 - Button
 	; P1 - Temperature Sensor
-	; P2 - LEDS
-	; P3 - 4x7 Segments Display
-	
+	; P2 - 0,1,2 LEDS
+	;      4,5,6,7 4x Segments Display
+	; P3 - x8 Segments Display
+
 
 	; input
 	IN0 equ 20H
 	temp_high_in equ IN0.0
 	button_in equ IN0.1
-	
+
 	; output
 	OUT0 equ 21H
 	active_led_out equ OUT0.0
 	horn_out equ OUT0.1
 	heating_out equ OUT0.2
-	
+
 	; IO tempsensor
 	tempsensor_dq equ P1.0
 	tempsensor_clk equ P1.1
@@ -68,10 +68,6 @@ init:
 ; Assignments
 	MOV IN0, #00H
 	MOV OUT0, #0FFH
-	; Initialize LEDs
-;	SETB active_led_out
-;	SETB horn_out
-;	SETB heating_out
 
 	; Initialize internals
 	MOV active, #00H
@@ -139,8 +135,8 @@ checktimer:
 
 starttimer:
 	; reset time
-	mov timer_minutes, #0 ; minutes
-	mov timer_seconds, #10 ; seconds
+	mov timer_minutes, #2 ; minutes
+	mov timer_seconds, #0 ; seconds
 	; start timer
 	mov tl0, #0c0h ; working #0C0h
 	mov th0, #0c0h ; working #0C0h
@@ -152,7 +148,6 @@ starttimer:
 	
 
 output:
-
 	; Move output register
 	MOV P2, OUT0
 	; --> read
@@ -200,28 +195,28 @@ stoptimer:
 
 set_segments:
 	; seconds
-;	mov DPTR, #table
-;	mov a, R6
-;	mov b, #0ah
-;	div ab
-;	mov R2, a
-;	movc a,@a+dptr
-;	mov digit_1, a
-;	mov a, r2
-;	xch a,b
-;	movc a, @a+dptr
-;	mov digit_0, a
-;	; minutes
-;	mov a, R7
-;	mov b, #0ah
-;	div ab
-;	mov R2, a
-;	movc a,@a+dptr
-;	mov digit_3, a
-;	mov a, r2
-;	xch a,b
-;	movc a, @a+dptr
-;	mov digit_2, a
+	mov DPTR, #table
+	mov a, R6
+	mov b, #0ah
+	div ab
+	mov R2, a
+	movc a,@a+dptr
+	mov digit_1, a
+	mov a, r2
+	xch a,b
+	movc a, @a+dptr
+	mov digit_0, a
+	; minutes
+	mov a, R7
+	mov b, #0ah
+	div ab
+	mov R2, a
+	movc a,@a+dptr
+	mov digit_3, a
+	mov a, r2
+	xch a,b
+	movc a, @a+dptr
+	mov digit_2, a
 
 	; Display digits
 	CALL display
@@ -229,32 +224,24 @@ set_segments:
 	ret
 
 display:
-    mov P3, digit_0
-    clr P2.4
-    setb P2.4
+	mov P3, digit_0
+	clr P2.4
+	setb P2.4
+	
+	mov P3, digit_1
+	clr P2.5
+	setb P2.5
+	
+	mov P3, digit_2
+	clr P3.7 ; seperate minutes from secons with point
+	clr P2.6
+	setb P2.6
+	
+	mov P3, digit_3
+	clr P2.7
+	setb P2.7
 
-    mov P3, digit_1
-    clr P2.5
-    setb P2.5
-
-    mov P3, digit_2
-    clr P2.6
-    setb P2.6
-
-    mov P3, digit_3
-    clr P2.7
-    setb P2.7
-
-    ret
-
-; Table for Digits
-;org 300h
-;table:
-;DB 11000000b
-;DB 11111001b, 10100100b, 10110000b
-;DB 10011001b, 10010010b, 10000010b
-;DB 11111000b, 10000000b, 10010000b
-;end
+	ret
 
 ;----------------------------------------------------
 ; util for temp. sensor handling
@@ -328,43 +315,6 @@ senddata:
 	clr a
 	ret
 
-getdata:
-	clr a
-	setb tempsensor_clk
-	clr tempsensor_clk
-	mov c, tempsensor_dq
-	mov a.0, c
-	setb tempsensor_clk
-	clr tempsensor_clk
-	mov c, tempsensor_dq
-	mov a.1, c
-	setb tempsensor_clk
-	clr tempsensor_clk
-	mov c, tempsensor_dq
-	mov a.2, c
-	setb tempsensor_clk
-	clr tempsensor_clk
-	mov c, tempsensor_dq
-	mov a.3, c
-	setb tempsensor_clk
-	clr tempsensor_clk
-	mov c, tempsensor_dq
-	mov a.4, c
-	setb tempsensor_clk
-	clr tempsensor_clk
-	mov c, tempsensor_dq
-	mov a.5, c
-	setb tempsensor_clk
-	clr tempsensor_clk
-	mov c, tempsensor_dq
-	mov a.6, c
-	setb tempsensor_clk
-	clr tempsensor_clk
-	mov c, tempsensor_dq
-	mov a.7, c
-	clr c
-	ret
-
 resetsensor:
 	clr tempsensor_rst
 	setb tempsensor_rst
@@ -375,4 +325,11 @@ sensortick:
 	clr tempsensor_clk
 	ret
 
+;Table for Digits
+org 300h
+table:
+DB 11000000b
+DB 11111001b, 10100100b, 10110000b
+DB 10011001b, 10010010b, 10000010b
+DB 11111000b, 10000000b, 10010000b
 end
