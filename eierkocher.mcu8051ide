@@ -262,9 +262,9 @@
 		/>
 	</general>
 	<other_options><![CDATA[]]></other_options>
-	<compiler_options><![CDATA[{_title 0 _list 0 _print 0 _nomod 0 max_ihex_rec_length 16 _object 0 _pagelength 0 QUIET 0 _symbols 0 CREATE_SIM_FILE 1 CREATE_BIN_FILE 1 optim_ena 0 _pagewidth 0 WARNING_LEVEL 0 _paging 0 _date 0} 0 {--verbose 1 -i {} --omf-51 0 --columns 0 custom {}} {adf 1} {-L 1 -M 0 custom {} -n 0 -P 0 -A 0 -a 0 -r {} -C 0 -c 0 -s 1 -u 0 -U 0 -w 0 -g MAP -quiet 0 -h 0 -x 0 -cpu 8051 -I 1 -i {}} {ihex 1 adf 1} {--out-fmt-s19 0 --fdollars-in-identifiers 0 --nogcse 0 --nooverlay 1 --no-peep-comments 0 --no-c-code-in-asm 0 --print-search-dirs 0 --nostdlib 0 --short-is-8bits 0 --cyclomatic 0 --compile-only 0 --peep-asm 0 --nolabelopt 0 --profile 0 --noinvariant 0 --no-reg-params 0 --noinduction 1 --out-fmt-ihx 0 --nojtbound 0 --opt-code-size 0 --less-pedantic 0 --no-peep 0 -S 0 --verbose 1 --funsigned-char 0 --xstack 0 --no-xinit-opt 0 --debug 1 --preprocessonly 0 --c1mode 0 -V 1 --float-reent 0 --parms-in-bank1 0 --opt-code-speed 0 --nostdinc 0 --main-return 0 --xram-movc 0 --fommit-frame-pointer 0 --fverbose-asm 0 --int-long-reent 0 --all-callee-saves 0 --stack-probe 0 --noloopreverse 0 --stack-auto 0 --use-stdout 0} {model --model-small standard --std-sdcc89 stack {} custom {}} {--codeseg {} --constseg {} --code-loc {} --stack-size {} --xram-loc {} --lib-path {} --xstack-loc {} --stack-loc {} --data-loc {}} {-l {} -L {} --disable-warning {} -I {}} {-l 1 -A {} -F hex custom {}} {adf 1}]]></compiler_options>
+	<compiler_options><![CDATA[{_title 0 _list 0 _print 0 _nomod 0 max_ihex_rec_length 16 _object 0 _pagelength 0 QUIET 0 _symbols 0 CREATE_SIM_FILE 1 CREATE_BIN_FILE 1 optim_ena 0 _pagewidth 0 WARNING_LEVEL 0 _paging 0 _date 0} 0 {--verbose 1 -i {} --omf-51 0 --columns 0 custom {}} {adf 1} {-L 1 -M 0 custom {} -n 0 -P 0 -A 0 -a 0 -r {} -C 0 -c 0 -s 1 -u 0 -U 0 -w 0 -g MAP -quiet 0 -h 0 -x 0 -cpu 8051 -I 1 -i {}} {ihex 1 adf 1} {--out-fmt-s19 0 --fdollars-in-identifiers 0 --nogcse 0 --nooverlay 1 --no-peep-comments 0 --no-c-code-in-asm 0 --print-search-dirs 0 --nostdlib 0 --peep-asm 0 --nolabelopt 0 --short-is-8bits 0 --cyclomatic 0 --compile-only 0 --profile 0 --noinvariant 0 --no-reg-params 0 --noinduction 1 --out-fmt-ihx 0 --nojtbound 0 --opt-code-size 0 --less-pedantic 0 --no-peep 0 -S 0 --verbose 1 --funsigned-char 0 --xstack 0 --no-xinit-opt 0 --debug 1 --preprocessonly 0 --c1mode 0 -V 1 --float-reent 0 --parms-in-bank1 0 --opt-code-speed 0 --nostdinc 0 --main-return 0 --xram-movc 0 --fommit-frame-pointer 0 --fverbose-asm 0 --int-long-reent 0 --all-callee-saves 0 --stack-probe 0 --noloopreverse 0 --stack-auto 0 --use-stdout 0} {model --model-small standard --std-sdcc89 stack {} custom {}} {--codeseg {} --constseg {} --code-loc {} --stack-size {} --xram-loc {} --lib-path {} --xstack-loc {} --stack-loc {} --data-loc {}} {-l {} -L {} --disable-warning {} -I {}} {-l 1 -A {} -F hex custom {}} {adf 1}]]></compiler_options>
 	<files
-		count="2"
+		count="1"
 		current_file="0"
 		current_file2="-1"
 		pwin_sash="0"
@@ -272,14 +272,14 @@
 		pwin_orient="horizontal">
 
 		<file name="eierkocher.asm" active="yes" o_bookmark="0" p_bookmark="0" file_index="0" read_only="0" highlight="0">
-			<actual_line value="100"/>
-			<md5_hash value="5E1BC5ABB133EA179EB0FB3C13131B4C"/>
+			<actual_line value="9"/>
+			<md5_hash value="D06B74F2A0DA1C2F3C152AED06F09C81"/>
 			<path><![CDATA[]]></path>
 			<bookmarks>
-				0
+				163
 			</bookmarks>
 			<breakpoints>
-				59
+				0
 			</breakpoints>
 			<eol value="lf"/>
 			<encoding value="utf-8"/>
